@@ -1,7 +1,9 @@
 package project;
 
 
+
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.Label;
@@ -14,10 +16,15 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 import javax.imageio.ImageIO;
+import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -33,7 +40,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumnModel;
 
-public class Test extends JFrame {
+public class ProjectMain extends JFrame {
 
    private JPanel contentPane;
 
@@ -45,23 +52,45 @@ public class Test extends JFrame {
 	String DB_USER="c##ora_user";
 	String DB_PASSWORD="jang";
 
-
+	private Object[][] data = null;
    private String colNames[] = { "project image", "project name" }; // 테이블 컬럼 값들
-   private DefaultTableModel model = new DefaultTableModel(colNames, 0) {
-      @Override
-      public boolean isCellEditable(int row, int column) {
-         if (column >= 0) {
-            return false;
-         } else {
-            return true;
-         }
-      }
-   }; // 테이블 데이터 모델
+//   private DefaultTableModel model = new DefaultTableModel(colNames, 0) {
+//      @Override
+//      public boolean isCellEditable(int row, int column) {
+//         if (column >= 0) {
+//            return false;
+//         } else {
+//            return true;
+//         }
+//      }
+//	
+//	
+//	
+//      
+//      @Override
+//      public Class<?> getColumnClass(int column){
+//    	  switch(column) {
+//    	  case 0: return ImageIcon.class;
+//    	  case 1: return String.class;
+//    	  default : return Object.class;
+//    	  }
+//      }
+//      
+//      
+//   }; // 테이블 데이터 모델
+   
+   
+   private DefaultTableModel model = new DefaultTableModel(data, colNames) {
+	   public Class getComlumnClass(int column) {
+		   return getValueAt(0,column).getClass();
+	   }
+   };
+   
    private Connection conn = null;
    private Statement stat = null;
    private ResultSet rs = null;
 
-   Test() {
+   ProjectMain() {
 
       setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
       setBounds(100, 100, 1280, 720);
@@ -115,15 +144,15 @@ public class Test extends JFrame {
       column3.setBounds(0, 292, 185, 44);
       navPanel.add(column3);
 
-      JPanel contentPanel = new JPanel();
-      contentPanel.setBounds(193, 23, 1073, 660);
-      contentPane.add(contentPanel);
-      contentPanel.setLayout(null);
+      JPanel Main_contentPanel = new JPanel();
+      Main_contentPanel.setBounds(193, 23, 1073, 660);
+      contentPane.add(Main_contentPanel);
+      Main_contentPanel.setLayout(null);
 
       JPanel headerPanel = new JPanel();
       headerPanel.setBackground(new Color(110, 89, 222));
       headerPanel.setBounds(0, 31, 1073, 79);
-      contentPanel.add(headerPanel);
+      Main_contentPanel.add(headerPanel);
       headerPanel.setLayout(null);
 
       JLabel hederText = new JLabel("Project");
@@ -139,7 +168,7 @@ public class Test extends JFrame {
       
       JPanel ptablepanel = new JPanel();
       ptablepanel.setBounds(12, 156, 1049, 494);
-      contentPanel.add(ptablepanel);
+      Main_contentPanel.add(ptablepanel);
       ptablepanel.setLayout(null);
       table = new JTable(model); // 테이블에 모델객체 삽입
       table.addMouseListener(new JTableMouseListener() {
@@ -149,10 +178,11 @@ public class Test extends JFrame {
               int row = table.getSelectedRow();     
               int col = table.getSelectedColumn();        
           
-//              System.out.println(model.getValueAt(row, col));   
+              System.out.println("클릭");   
                   
           }
           public void mouseEntered(java.awt.event.MouseEvent e) {
+        	  
           }
           public void mouseExited(java.awt.event.MouseEvent e) {    
           }
@@ -170,7 +200,7 @@ public class Test extends JFrame {
       //
       
       //
-      table.setRowHeight(150);
+      table.setRowHeight(200);
       //
       
       
@@ -185,10 +215,12 @@ public class Test extends JFrame {
       //table에 버튼추가 render
       table.getColumnModel().getColumn(0).setCellRenderer(new TableCell());
       table.getDefaultEditor(String.class).addCellEditorListener(table);
-      //
+//      //
       //table 내용 가운데 정렬 메소드 호출
       tableCellCenter(table);
       //
+//      table.setPreferredScrollableViewportSize(table.getPreferredSize());
+
       
       JPanel mainPanel = new JPanel();
       mainPanel.setBounds(0, 0, 1395, 800);
@@ -204,12 +236,31 @@ public class Test extends JFrame {
          stat = conn.createStatement();
          rs = stat.executeQuery(query);// 리턴받아와서 데이터를 사용할 객체생성
 
-
+         
+         
          while (rs.next()) { // 각각 값을 가져와서 테이블값들을 추가
-            model.addRow(new Object[] { rs.getString("S_PROJECT_IMAGE"),rs.getString("S_PROJECT_NAME")});
+//        	 Icon image = new ImageIcon(rs.getString("S_PROJECT_IMAGE"));
+//        	 String colNames[] = { "project image", "project name" };
+//
+//     		Object[][] data = { { image,rs.getString("S_PROJECT_NAME") }, 
+//     							};
+//
+//     		DefaultTableModel model = new DefaultTableModel(data, colNames) {
+//     			public Class getColumnClass(int column) {
+//     				return getValueAt(0, column).getClass();
+//     			}
+//     		};
+//        	 
+//     		model.addRow(data);
+ 
+        	 model.addRow(new Object[] { rs.getString("S_PROJECT_IMAGE"),rs.getString("S_PROJECT_NAME")});
 
-            
+
+
+
          }
+         
+         
       } catch (Exception e) {
          System.out.println(e.getMessage());
       } finally {
@@ -247,7 +298,7 @@ public class Test extends JFrame {
    EventQueue.invokeLater(new Runnable() {
       public void run() {
          try {
-        	 Test frame = new Test();
+        	 ProjectMain frame = new ProjectMain();
       frame.setVisible(true);
             frame.setLocationRelativeTo(null);    // 중앙 배치
             frame.setResizable(false);          // 사이즈 고정
@@ -258,6 +309,5 @@ public class Test extends JFrame {
    });
    }
 }
-
 
 

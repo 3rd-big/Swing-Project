@@ -2,6 +2,7 @@ package project;
 
 
 
+
 import java.awt.Color;
 import java.awt.EventQueue;
 import java.awt.FlowLayout;
@@ -18,10 +19,13 @@ import java.sql.Statement;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+import java.util.Vector;
 
 import javax.imageio.ImageIO;
+import javax.swing.DefaultCellEditor;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -36,9 +40,10 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.JTextArea;
 import javax.swing.ScrollPaneConstants;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
 import java.awt.event.ActionEvent;
 
-public class boardtestpage extends JFrame {
+public class boardtestpageForAdmin extends JFrame {
 
    private JPanel contentPane;
 
@@ -51,7 +56,7 @@ public class boardtestpage extends JFrame {
 	String DB_PASSWORD="jang";
 
 
-   private String colNames[] = {"Reviews"}; // 테이블 컬럼 값들
+   private String colNames[] = {"Reviews","BoardNo"}; // 테이블 컬럼 값들
    private DefaultTableModel model = new DefaultTableModel(colNames, 0) {
       @Override
       public boolean isCellEditable(int row, int column) {
@@ -66,7 +71,7 @@ public class boardtestpage extends JFrame {
    private Statement stat = null;
    private ResultSet rs = null;
 
-   boardtestpage() {
+   boardtestpageForAdmin() {
 	   
 	   
       setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -144,73 +149,44 @@ public class boardtestpage extends JFrame {
       
       
       JPanel ptablepanel = new JPanel();
-      ptablepanel.setBounds(0, 304, 1049, 333);
+      ptablepanel.setBounds(0, 138, 1049, 499);
       contentPanel.add(ptablepanel);
       ptablepanel.setLayout(null);
       table = new JTable(model); // 테이블에 모델객체 삽입
       // table.addMouseListener(new JTableMouseListener()); // 테이블에 마우스리스너 연결
       scrollPane = new JScrollPane(table);
-      scrollPane.setBounds(57, 21, 944, 290);
+      scrollPane.setBounds(57, 21, 944, 389);
       ptablepanel.add(scrollPane);
       
-      JLabel lblNewLabel = new JLabel("Review");
-      lblNewLabel.setFont(new Font("Segoe UI", Font.PLAIN, 18));
-      lblNewLabel.setBounds(53, 192, 74, 30);
-      contentPanel.add(lblNewLabel);
       
-      JScrollPane WritescrollPane = new JScrollPane(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-      WritescrollPane.setBounds(143, 151, 800, 112);
-      contentPanel.add(WritescrollPane);
-      
-      JTextArea BoardContentTxtArea = new JTextArea();
-      WritescrollPane.setViewportView(BoardContentTxtArea);
-      
-      
-      JButton btn_Post = new JButton("Post");
-      btn_Post.addActionListener(new ActionListener() {
+      JButton btn_Remove = new JButton("Remove");
+      btn_Remove.addActionListener(new ActionListener() {
       	public void actionPerformed(ActionEvent e) {
-      		
-      		System.out.println("post되었습니다.");
-      		DB boardpost = new DB(BoardContentTxtArea.getText());
-      		boardpost.inputReviewDB();
-      		//팝업
-      		BoardPostDialog dialog = new BoardPostDialog();
-      		dialog.setVisible(true);
-      		//쓴 리뷰내용 테이블에 추가 
-      		DefaultTableModel model = (DefaultTableModel)table.getModel();
-      		model.addRow(new String[] {BoardContentTxtArea.getText()});
-      		//textarea 초기화
-      		BoardContentTxtArea.setText("");
+      		int index = table.getSelectedRow();
+  		  
+  		  DefaultTableModel tm = (DefaultTableModel)table.getModel();
+  		  if(index>=0 && index<table.getRowCount()) {
+  			  System.out.println("삭제");
+  			  tm.removeRow(index);
+  		  }
       		
       	}
       });
-      btn_Post.setForeground(Color.WHITE);
-      btn_Post.setFont(new Font("Segoe UI", Font.BOLD, 15));
-      btn_Post.setBackground(new Color(102, 205, 170));
-      btn_Post.setBounds(964, 229, 74, 34);
-      contentPanel.add(btn_Post);
-      
-      JButton btn_Back = new JButton("Back");
-      btn_Back.addActionListener(new ActionListener() {
-      	public void actionPerformed(ActionEvent e) {
-      		
-      	}
-      });
-      btn_Back.setForeground(Color.WHITE);
-      btn_Back.setFont(new Font("Segoe UI", Font.PLAIN, 15));
-      btn_Back.setBackground(new Color(102, 205, 170));
-      btn_Back.setBounds(964, 153, 74, 34);
-      contentPanel.add(btn_Back);
+      btn_Remove.setForeground(Color.WHITE);
+      btn_Remove.setFont(new Font("Segoe UI", Font.PLAIN, 15));
+      btn_Remove.setBackground(new Color(102, 205, 170));
+      btn_Remove.setBounds(463, 433, 98, 34);
+      ptablepanel.add(btn_Remove);
       
      
       table.getTableHeader().setReorderingAllowed(false); // 이동 불가
       table.getTableHeader().setResizingAllowed(false); // 크기 조절 불가
-      
-      
-      
+
       select();
       getContentPane().setLayout(null); // 레이아웃 배치관리자 삭제
-
+    
+      
+      
       JPanel mainPanel = new JPanel();
       mainPanel.setBounds(0, 0, 1395, 800);
       contentPane.add(mainPanel);
@@ -218,7 +194,7 @@ public class boardtestpage extends JFrame {
    }
 
    private void select() {
-      String query = "SELECT L_BOARD_CONTENT FROM TB_BOARD";    
+      String query = "SELECT L_BOARD_CONTENT,N_BOARD_NO FROM TB_BOARD";    
       try {
          Class.forName(driver);
          conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
@@ -227,9 +203,9 @@ public class boardtestpage extends JFrame {
 
 
          while (rs.next()) { // 각각 값을 가져와서 테이블값들을 추가
-            model.addRow(new Object[] { rs.getString("L_BOARD_CONTENT")});
-
+            model.addRow(new Object[] { rs.getString("L_BOARD_CONTENT"),rs.getString("N_BOARD_NO")});
             
+   
          }
       } catch (Exception e) {
          System.out.println(e.getMessage());
@@ -245,53 +221,13 @@ public class boardtestpage extends JFrame {
    
    
    
-   //최근 한줄만 추가
-   private void add() {
-	        //최근 입력된 리뷰내용의 boardno검색
-	      String CntQuery = "select count(*) from TB_BOARD";
-	      try {
-	         Class.forName(driver);
-	         conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
-	         stat = conn.createStatement();
-	         rs = stat.executeQuery(CntQuery);
-
-	         
-	         String boardno = rs.getString(1);
-	         try {
-	        	 String query = "SELECT L_BOARD_CONTENT FROM TB_BOARD WHERE N_BOARD_NO=5";
-		         Class.forName(driver);
-		         conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
-		         stat = conn.createStatement();
-		         rs = stat.executeQuery(query);
-		         
-		         
-		         model.addRow(new Object[] { rs.getString("L_BOARD_CONTENT")});
-		         
-	         }catch(Exception e) { }
-
-	         
-	      } catch (Exception e) {
-	         System.out.println(e.getMessage());
-	      } finally {
-	         try {
-	            conn.close();
-	            stat.close();
-	            rs.close();
-	         } catch (Exception e2) {
-	        	 System.out.println("12");
-	         }
-	      }
-	   }
-   
-   
-   
    
 
    public static void main(String[] args) {
    EventQueue.invokeLater(new Runnable() {
       public void run() {
          try {
-        	 boardtestpage frame = new boardtestpage();
+        	 boardtestpageForAdmin frame = new boardtestpageForAdmin();
       frame.setVisible(true);
             frame.setLocationRelativeTo(null);    // 중앙 배치
             frame.setResizable(false);          // 사이즈 고정
@@ -305,32 +241,4 @@ public class boardtestpage extends JFrame {
 }
 
 
-class BoardPostDialog extends JDialog{
-	JLabel pcl = new JLabel("등록되었습니다.");
-	
-	JButton Okbtn = new JButton("OK");
-	
-	BoardPostDialog(){
-		
-		setLayout(new FlowLayout());
-		add(pcl);
-		add(Okbtn);
-		setSize(200,100);
-		setLocationRelativeTo(null);
-		
-		pcl.setFont(new Font("굴림", Font.PLAIN, 18));
-		
-		//Ok버튼 리스너
-		Okbtn.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				setVisible(false);
-				DB refresh = new DB();
-				refresh.add();
-//				
-			}
-		});
-	}
-	
-
-}
 

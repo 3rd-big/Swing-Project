@@ -1,14 +1,32 @@
-package test;
+package project;
 
 import java.sql.*;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JFileChooser;
+import javax.swing.table.DefaultTableModel;
 
 public class DB {
 	String DB_URL = "jdbc:oracle:thin:@localhost:1521:xe";
 	String DB_USER="c##ora_user";
 	String DB_PASSWORD="jang";
+	
+
+	
+	private String colNames[] = {"내용" };
+	private DefaultTableModel model = new DefaultTableModel(colNames, 0) {
+	      @Override
+	      public boolean isCellEditable(int row, int column) {
+	         if (column >= 0) {
+	            return false;
+	         } else {
+	            return true;
+	         }
+	      }
+	   }; // 테이블 데이터 모델
+	
+	
 	
 	//signin
 	private String UserNo;
@@ -18,19 +36,30 @@ public class DB {
 	private String ProjectDescription;
 	private String ProjectImage;
 	private String TargetPrice;
+	private String filePath;
 	//review board
 	private String BoardContent;
 	private String BoardTitle;
+	private int row;
+	private int col;
 	
+	
+	
+	
+	public DB() {
+
+		
+	}
 	
 	//project register 생성자
-	public DB(String ProjectName, String ProjectDescription, String TargetPrice) {
+	public DB(String ProjectName, String ProjectDescription, String TargetPrice, String filePath) {
 		this.ProjectName = ProjectName;
 		this.ProjectDescription = ProjectDescription;
-		
+		this.filePath = filePath;
 		this.TargetPrice = TargetPrice;
 				
 	}
+	
 	
 	
 	//board 생성자
@@ -40,8 +69,9 @@ public class DB {
 	}
 
 	
-	
+	//project db에 저장
 	public void inputProjectDB() {
+		
 		String date = null;
 		String projectNo=null;
 		String getProjectImageQuery = "SELECT S_PROJECT_IMAGE FROM TB_PROJECT_INFO";
@@ -54,36 +84,37 @@ public class DB {
 			e.printStackTrace();
 		}
 		
-		// Oracle 현재시간 얻어오기
-		try(Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
-			Statement stmt = conn.createStatement();
-			ResultSet rs = stmt.executeQuery(getDateQuery);)
-		{	
-			while(rs.next()) {
-				date = rs.getString(1);
-				System.out.println(date);
-			}
-		}catch (Exception e) {
-			e.getMessage();
-		}
+		//날짜
+//		try(Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+//			Statement stmt = conn.createStatement();
+//			ResultSet rs = stmt.executeQuery(getDateQuery);)
+//		{	
+//			while(rs.next()) {
+//				date = rs.getString(1);
+//				System.out.println(date);
+//			}
+//		}catch (Exception e) {
+//			e.getMessage();
+//			System.out.println("10");
+//		}
 		
-		try {
-
-			Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
-
-			Statement stmt = conn.createStatement();
-
-			ResultSet rs = stmt.executeQuery(getProjectImageQuery);
-	
-			while(rs.next()) {
-
-				String get_project_image = rs.getString(1);
-				ProjectImage = get_project_image;
-
-			}
-		}catch(Exception e) { 
-			
-		}
+//		try {
+//
+//			Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+//
+//			Statement stmt = conn.createStatement();
+//
+//			ResultSet rs = stmt.executeQuery(getProjectImageQuery);
+//	
+//			while(rs.next()) {
+//
+//				String get_project_image = rs.getString(1);
+//				ProjectImage = get_project_image;
+//
+//			}
+//		}catch(Exception e) { 
+//			System.out.println("9");
+//		}
 		
 		
 		
@@ -94,23 +125,24 @@ public class DB {
 			{	
 				while(rs.next()) {
 					projectNo = rs.getString(1);
-					int tmp = Integer.parseInt(projectNo) + 1;
+					int tmp = Integer.parseInt(projectNo) + 2001;
 					projectNo = Integer.toString(tmp);
 				}
 			}catch (Exception e) {
 				e.getMessage();
+				System.out.println("8");
 			}
-		
-		String query = "INSERT INTO TB_PROJECT_INFO("
+		int tgp = Integer.parseInt(TargetPrice);
+		String query = "INSERT INTO TB_PROJECT_INFO ("
 			     + "N_PROJECT_NO," 
-			     + "S_PROJECT_NAME"
-			     + "N_TARGET_PRICE"
-			     + "N_TOTAL_PRICE"
-			     + "L_DESCRIPTION"
-			     + "S_PROJECT_IMAGE"
-			     + "D_PROJECT_CREATED"
-			     + "VALUES ( '" + projectNo + "', '" + ProjectName +"', '" + TargetPrice + "', '0', '" + ProjectDescription 
-			     +"','"+ ProjectImage + "', '" + date + "')";
+			     + "S_PROJECT_NAME, "
+			     + "N_TARGET_PRICE, "
+			     + "N_TOTAL_PRICE, "
+			     + "L_DESCRIPTION, "
+			     + "S_PROJECT_IMAGE, "
+			     + "D_PROJECT_CREATED) "
+			     + "VALUES ( " + projectNo + ", '" + ProjectName +"', '" + tgp + "', 0, '" + ProjectDescription 
+			     +"','"+ filePath + "', SYSDATE)";
 		
 		System.out.println(query);
 		
@@ -122,13 +154,14 @@ public class DB {
 			
 		}catch (Exception e) {
 			e.getMessage();
+			System.out.println("7");
 		}
 		 
 	}
 	public void inputReviewDB() {
 		String date = null;
 		String boardNo=null;
-		
+		String sysdate = null;
 		String getDateQuery = "SELECT TO_CHAR(SYSDATE) FROM DUAL";
 		String getBoardCountQuery = "select count(*) from TB_BOARD";
 		
@@ -136,9 +169,10 @@ public class DB {
 			Class.forName("oracle.jdbc.driver.OracleDriver");
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
+			System.out.println("6");
 		}
 		
-		
+		//
 		try(Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
 			Statement stmt = conn.createStatement();
 			ResultSet rs = stmt.executeQuery(getDateQuery);)
@@ -149,6 +183,7 @@ public class DB {
 			}
 		}catch (Exception e) {
 			e.getMessage();
+			System.out.println("5");
 		}
 		
 		try(Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
@@ -162,29 +197,77 @@ public class DB {
 				}
 			}catch (Exception e) {
 				e.getMessage();
+				System.out.println("4");
 			}
 		
-		String query = "INSERT INTO TB_BOARD("
-			     + "N_BOARD_NO," 
-			     + "S_BOARD_SUBJECT"
-			     + "S_BOARD_CONTENT"
-			     + "D_BOARD_CREATED"
-			     + "N_USER_NO"
-			     + "VALUES ( '" + boardNo + "', '" + BoardTitle +"', '" + BoardContent +"', '" + date + "','"+UserNo
-			     +"')";
+		String ReviewContenQquery = "INSERT INTO TB_BOARD ( "
+			     + "N_BOARD_NO, " 
+			     + "L_BOARD_CONTENT, "
+			     + "D_BOARD_CREATED) "
+			     + "VALUES ( " + boardNo +", '" + BoardContent +"', " + sysdate + ")";
 		
-		System.out.println(query);
+		System.out.println(ReviewContenQquery);
+		
 		
 	
 		try(Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
-			PreparedStatement stmt = conn.prepareStatement(query);)
+			PreparedStatement stmt = conn.prepareStatement(ReviewContenQquery);)
 		{
-			stmt.executeUpdate(query);
+			stmt.executeUpdate(ReviewContenQquery);
+			System.out.println("load완료");
 			
 		}catch (Exception e) {
 			e.getMessage();
+			System.out.println("1");
 		}
 	}
+	
+//	public boolean isAttached(String project_image) {
+//		if(project_image!=null) {
+//			return true;
+//		}else {
+//			return false;
+//		}
+//	}
+	
+	
+	
+	public void add() {
+        //최근 입력된 리뷰내용의 boardno검색
+      String CntQuery = "select count(*) from TB_BOARD";
+      String boardno = null;
+      try {
+         Class.forName("oracle.jdbc.driver.OracleDriver");
+         Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+         Statement stat = conn.createStatement();
+         ResultSet rs = stat.executeQuery(CntQuery);
+         while(rs.next()) {
+        	 boardno = rs.getString(1);
+         }
+         try {
+        	 String query = "SELECT L_BOARD_CONTENT FROM TB_BOARD WHERE N_BOARD_NO="+boardno;
+	         Class.forName("oracle.jdbc.driver.OracleDriver");
+	         Connection conn2 = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+	         Statement stat2 = conn.createStatement();
+	         ResultSet rs2 = stat.executeQuery(query);
+	         
+	         while(rs.next()) {
+	        	 model.addRow(new Object[] { rs.getString("L_BOARD_CONTENT")});
+	         }
+         }catch(Exception e) { 
+        	 System.out.println("2");
+         }
+
+         
+      } catch (Exception e) {
+         System.out.println(e.getMessage());
+         System.out.println("3");
+      }
+   }
+	
+	
+	
+	
 	
 	
 }

@@ -1,4 +1,4 @@
-package test;
+package project;
 
 
 import java.awt.EventQueue;
@@ -13,10 +13,16 @@ import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.Statement;
 import java.awt.event.ActionEvent;
 import java.awt.Font;
 import java.awt.Color;
@@ -47,7 +53,10 @@ public class registertestpage extends JFrame {
    private JScrollPane scrollPane;
    private JLabel imagelabel;
    private JTextField TargetPriceTxt;
+   JFileChooser chooser;
+  	String filePath;
 
+   
    /**
     * Launch the application.
     */
@@ -122,15 +131,15 @@ public class registertestpage extends JFrame {
       column3.setBounds(0, 292, 185, 44);
       navPanel.add(column3);
       
-      JPanel contentPanel = new JPanel();
-      contentPanel.setBounds(193, 23, 1073, 660);
-      contentPane.add(contentPanel);
-      contentPanel.setLayout(null);
+      JPanel Register_contentPanel  = new JPanel();
+      Register_contentPanel.setBounds(193, 23, 1073, 660);
+      contentPane.add(Register_contentPanel);
+      Register_contentPanel.setLayout(null);
       
       JPanel headerPanel = new JPanel();
       headerPanel.setBounds(0, 31, 1073, 79);
       headerPanel.setBackground(new Color(110, 89, 222));
-      contentPanel.add(headerPanel);
+      Register_contentPanel.add(headerPanel);
       headerPanel.setLayout(null);
       
       JLabel headerText = new JLabel("Project Register");
@@ -141,7 +150,7 @@ public class registertestpage extends JFrame {
       
       JPanel mpanel = new JPanel();
       mpanel.setBounds(0, 108, 1073, 552);
-      contentPanel.add(mpanel);
+      Register_contentPanel.add(mpanel);
       mpanel.setLayout(null);
       
       ProjectNameTxt = new JTextField();
@@ -182,20 +191,7 @@ public class registertestpage extends JFrame {
       scrollPane.setBounds(170, 161, 748, 297);
       mpanel.add(scrollPane);
       
-      JButton btn_Post = new JButton("Post");
-      btn_Post.addActionListener(new ActionListener() {
-      	public void actionPerformed(ActionEvent e) {
-   
-    		DB projectpost = new DB(ProjectNameTxt.getText(), ProjectDescriptionTxt.getText(), TargetPriceTxt.getText() );
-    		projectpost.inputProjectDB();
-      	}
-      });
       
-      btn_Post.setForeground(Color.WHITE);
-      btn_Post.setBackground(new Color(102, 205, 170));
-      btn_Post.setFont(new Font("Segoe UI", Font.BOLD, 15));
-      btn_Post.setBounds(563, 475, 74, 34);
-      mpanel.add(btn_Post);
       
       JButton btn_Back = new JButton("Back");
       btn_Back.addActionListener(new ActionListener() {
@@ -216,6 +212,10 @@ public class registertestpage extends JFrame {
       lblNewLabel.setBounds(867, 70, 74, 34);
       mpanel.add(lblNewLabel);
       
+      
+      
+      
+      
       JTextPane txtpnTarget = new JTextPane();
       txtpnTarget.setText("Target Price");
       txtpnTarget.setFont(new Font("Segoe UI", Font.PLAIN, 18));
@@ -229,6 +229,27 @@ public class registertestpage extends JFrame {
       TargetPriceTxt.setColumns(10);
       TargetPriceTxt.setBounds(171, 118, 119, 34);
       mpanel.add(TargetPriceTxt);
+      
+      JButton btn_Post = new JButton("Post");
+      btn_Post.addActionListener(new ActionListener() {
+      	public void actionPerformed(ActionEvent e) {
+      		DB projectpost = new DB(ProjectNameTxt.getText(), ProjectDescriptionTxt.getText(), TargetPriceTxt.getText(), filePath );
+      		projectpost.inputProjectDB();
+    		//팝업 //Okbtn 이벤트 수정필요
+      		ProjectPostDialog dialog2 = new ProjectPostDialog();
+      		dialog2.setVisible(true);
+      		
+      		
+      	}
+      });
+      
+      btn_Post.setForeground(Color.WHITE);
+      btn_Post.setBackground(new Color(102, 205, 170));
+      btn_Post.setFont(new Font("Segoe UI", Font.BOLD, 15));
+      btn_Post.setBounds(563, 475, 74, 34);
+      mpanel.add(btn_Post);
+      
+      
       
       JLabel lblNewLabel_1 = new JLabel("\\");
       lblNewLabel_1.setFont(new Font("돋움", Font.PLAIN, 15));
@@ -245,12 +266,6 @@ public class registertestpage extends JFrame {
  //OpenBtn이 선택되면 호출되는 Action 리스너
    class OpenActionListener implements ActionListener{
 
-   	JFileChooser chooser;
-
-   	JLabel imagelabel;
-   	
-   	String filePath;
-   	
    	 OpenActionListener(JLabel l) {
    		 imagelabel = l;
             chooser= new JFileChooser(); // 파일 다이얼로그 생성
@@ -282,13 +297,39 @@ public class registertestpage extends JFrame {
    
           System.out.println(chooser.getSelectedFile().toString());
           
-          
-   	
-   	
-   	
+
    	}
+   	
+   	
 
    	
    }
 }
+class ProjectPostDialog extends JDialog{
+	JLabel pcl = new JLabel("등록되었습니다.");
+	
+	JButton Okbtn = new JButton("OK");
+	
+	ProjectPostDialog(){
+		
+		setLayout(new FlowLayout());
+		add(pcl);
+		add(Okbtn);
+		setSize(200,100);
+		setLocationRelativeTo(null);
+		
+		pcl.setFont(new Font("굴림", Font.PLAIN, 18));
+		
+		//Ok버튼 리스너
+		Okbtn.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				setVisible(false);
 
+				
+				
+			}
+		});
+	}
+	
+
+}

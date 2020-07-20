@@ -1,5 +1,4 @@
 package project;
-
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Image;
@@ -16,6 +15,7 @@ import javax.swing.AbstractCellEditor;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.event.CellEditorListener;
@@ -26,19 +26,21 @@ import javax.swing.table.TableCellRenderer;
 
 
 
-public class MyTableCellRender extends DefaultTableCellRenderer {
+public class AdminTableCellRender extends DefaultTableCellRenderer {
 
 	@Override
 	public Component getTableCellRendererComponent(
 			JTable table, Object value, boolean isSelected, boolean hasFocus,
 			int row, int column) {
 		// TODO Auto-generated method stub
-		super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-		
+//		super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+		JCheckBox box = new JCheckBox();
+//		box.setSelected(((Boolean) value).booleanValue());
+//		box.setHorizontalAlignment(JLabel.CENTER);
 		Component comp = null;
 		
-		if(column == 1) {
-			comp = new JButton();
+		if(column == 2) {
+			comp = new JCheckBox();
 
 		}
 		return comp;
@@ -50,10 +52,12 @@ public class MyTableCellRender extends DefaultTableCellRenderer {
 
 
 
-class TableCell extends AbstractCellEditor implements TableCellEditor, TableCellRenderer {
-    JButton jb;
+class AdminTableCellCh extends AbstractCellEditor implements TableCellEditor, TableCellRenderer {
+    JCheckBox jch;
 
-    public TableCell() {
+    public AdminTableCellCh() {
+    	
+    	
     	//
     	String DB_URL = "jdbc:oracle:thin:@localhost:1521:xe";
 		String DB_USER="c##ora_user";
@@ -82,21 +86,14 @@ class TableCell extends AbstractCellEditor implements TableCellEditor, TableCell
 			rs = st.executeQuery(GetImageQuery);
 	
 			while(rs.next()) {
+				jch = new JCheckBox();
+				jch.addActionListener(new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						
+					}
+				});
 
-
-				ImageIcon icon = new ImageIcon(rs.getString(1));
-
-				jb = new JButton();
-//				jb.setIcon(new ImageIcon("C:\\test\\FS.jpg"));
-				jb.setIcon(icon);
-
-	
-//				jb.addActionListener(new ActionListener() {
-//					@Override
-//					public void actionPerformed(ActionEvent e) {
-//						System.out.println("보기");
-//					}
-//				});
 			}
 		}catch(Exception e) { 
 			
@@ -131,13 +128,13 @@ class TableCell extends AbstractCellEditor implements TableCellEditor, TableCell
     @Override
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
             int row, int column) {
-        return jb;
+        return jch;
     }
 
     @Override
     public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row,
             int column) {
-        return jb;
+        return jch;
     }
     
     
