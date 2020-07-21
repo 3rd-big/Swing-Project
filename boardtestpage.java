@@ -62,9 +62,7 @@ public class boardtestpage extends JFrame {
          }
       }
    }; // 테이블 데이터 모델
-   private Connection conn = null;
-   private Statement stat = null;
-   private ResultSet rs = null;
+ 
 
    boardtestpage() {
 	   
@@ -121,15 +119,15 @@ public class boardtestpage extends JFrame {
       column3.setBounds(0, 292, 185, 44);
       navPanel.add(column3);
 
-      JPanel contentPanel = new JPanel();
-      contentPanel.setBounds(193, 23, 1073, 660);
-      contentPane.add(contentPanel);
-      contentPanel.setLayout(null);
+      JPanel Board_contentPanel = new JPanel();
+      Board_contentPanel.setBounds(193, 23, 1073, 660);
+      contentPane.add(Board_contentPanel);
+      Board_contentPanel.setLayout(null);
 
       JPanel headerPanel = new JPanel();
       headerPanel.setBackground(new Color(110, 89, 222));
       headerPanel.setBounds(0, 31, 1073, 79);
-      contentPanel.add(headerPanel);
+      Board_contentPanel.add(headerPanel);
       headerPanel.setLayout(null);
 
       JLabel hederText = new JLabel("BoardList");
@@ -145,7 +143,7 @@ public class boardtestpage extends JFrame {
       
       JPanel ptablepanel = new JPanel();
       ptablepanel.setBounds(0, 304, 1049, 333);
-      contentPanel.add(ptablepanel);
+      Board_contentPanel.add(ptablepanel);
       ptablepanel.setLayout(null);
       table = new JTable(model); // 테이블에 모델객체 삽입
       // table.addMouseListener(new JTableMouseListener()); // 테이블에 마우스리스너 연결
@@ -156,11 +154,11 @@ public class boardtestpage extends JFrame {
       JLabel lblNewLabel = new JLabel("Review");
       lblNewLabel.setFont(new Font("Segoe UI", Font.PLAIN, 18));
       lblNewLabel.setBounds(53, 192, 74, 30);
-      contentPanel.add(lblNewLabel);
+      Board_contentPanel.add(lblNewLabel);
       
       JScrollPane WritescrollPane = new JScrollPane(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
       WritescrollPane.setBounds(143, 151, 800, 112);
-      contentPanel.add(WritescrollPane);
+      Board_contentPanel.add(WritescrollPane);
       
       JTextArea BoardContentTxtArea = new JTextArea();
       WritescrollPane.setViewportView(BoardContentTxtArea);
@@ -188,7 +186,7 @@ public class boardtestpage extends JFrame {
       btn_Post.setFont(new Font("Segoe UI", Font.BOLD, 15));
       btn_Post.setBackground(new Color(102, 205, 170));
       btn_Post.setBounds(964, 229, 74, 34);
-      contentPanel.add(btn_Post);
+      Board_contentPanel.add(btn_Post);
       
       JButton btn_Back = new JButton("Back");
       btn_Back.addActionListener(new ActionListener() {
@@ -200,7 +198,7 @@ public class boardtestpage extends JFrame {
       btn_Back.setFont(new Font("Segoe UI", Font.PLAIN, 15));
       btn_Back.setBackground(new Color(102, 205, 170));
       btn_Back.setBounds(964, 153, 74, 34);
-      contentPanel.add(btn_Back);
+      Board_contentPanel.add(btn_Back);
       
      
       table.getTableHeader().setReorderingAllowed(false); // 이동 불가
@@ -208,7 +206,7 @@ public class boardtestpage extends JFrame {
       
       
       
-      select();
+      BoardTableSelect();
       getContentPane().setLayout(null); // 레이아웃 배치관리자 삭제
 
       JPanel mainPanel = new JPanel();
@@ -217,15 +215,22 @@ public class boardtestpage extends JFrame {
 
    }
 
-   private void select() {
+   private void BoardTableSelect() {
+	   
       String query = "SELECT L_BOARD_CONTENT FROM TB_BOARD";    
+      
       try {
-         Class.forName(driver);
-         conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
-         stat = conn.createStatement();
-         rs = stat.executeQuery(query);// 리턴받아와서 데이터를 사용할 객체생성
-
-
+		Class.forName(driver);
+	} catch (ClassNotFoundException e1) {
+		// TODO Auto-generated catch block
+		e1.printStackTrace();
+	}
+      
+      try(Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+    	         Statement stat = conn.createStatement();
+    	         ResultSet rs = stat.executeQuery(query);) {
+         
+   
          while (rs.next()) { // 각각 값을 가져와서 테이블값들을 추가
             model.addRow(new Object[] { rs.getString("L_BOARD_CONTENT")});
 
@@ -233,21 +238,18 @@ public class boardtestpage extends JFrame {
          }
       } catch (Exception e) {
          System.out.println(e.getMessage());
-      } finally {
-         try {
-            conn.close();
-            stat.close();
-            rs.close();
-         } catch (Exception e2) {
-         }
       }
+      
    }
    
    
    
    //최근 한줄만 추가
-   private void add() {
+   private void BoardContenAdd() {
 	        //최근 입력된 리뷰내용의 boardno검색
+	   	Connection conn = null;
+	   	Statement stat = null;
+	   	ResultSet rs = null;
 	      String CntQuery = "select count(*) from TB_BOARD";
 	      try {
 	         Class.forName(driver);

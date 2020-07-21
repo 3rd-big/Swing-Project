@@ -2,7 +2,6 @@ package project;
 
 
 
-
 import java.awt.Color;
 import java.awt.EventQueue;
 import java.awt.FlowLayout;
@@ -67,9 +66,7 @@ public class boardtestpageForAdmin extends JFrame {
          }
       }
    }; // 테이블 데이터 모델
-   private Connection conn = null;
-   private Statement stat = null;
-   private ResultSet rs = null;
+
 
    boardtestpageForAdmin() {
 	   
@@ -126,15 +123,15 @@ public class boardtestpageForAdmin extends JFrame {
       column3.setBounds(0, 292, 185, 44);
       navPanel.add(column3);
 
-      JPanel contentPanel = new JPanel();
-      contentPanel.setBounds(193, 23, 1073, 660);
-      contentPane.add(contentPanel);
-      contentPanel.setLayout(null);
+      JPanel BoardAdmin_contentPanel = new JPanel();
+      BoardAdmin_contentPanel.setBounds(193, 23, 1073, 660);
+      contentPane.add(BoardAdmin_contentPanel);
+      BoardAdmin_contentPanel.setLayout(null);
 
       JPanel headerPanel = new JPanel();
       headerPanel.setBackground(new Color(110, 89, 222));
       headerPanel.setBounds(0, 31, 1073, 79);
-      contentPanel.add(headerPanel);
+      BoardAdmin_contentPanel.add(headerPanel);
       headerPanel.setLayout(null);
 
       JLabel hederText = new JLabel("BoardList");
@@ -150,7 +147,7 @@ public class boardtestpageForAdmin extends JFrame {
       
       JPanel ptablepanel = new JPanel();
       ptablepanel.setBounds(0, 138, 1049, 499);
-      contentPanel.add(ptablepanel);
+      BoardAdmin_contentPanel.add(ptablepanel);
       ptablepanel.setLayout(null);
       table = new JTable(model); // 테이블에 모델객체 삽입
       // table.addMouseListener(new JTableMouseListener()); // 테이블에 마우스리스너 연결
@@ -158,17 +155,24 @@ public class boardtestpageForAdmin extends JFrame {
       scrollPane.setBounds(57, 21, 944, 389);
       ptablepanel.add(scrollPane);
       
+      table.getTableHeader().setReorderingAllowed(false); // 이동 불가
+      table.getTableHeader().setResizingAllowed(false); // 크기 조절 불가
+
+      select();
+      getContentPane().setLayout(null); // 레이아웃 배치관리자 삭제
       
       JButton btn_Remove = new JButton("Remove");
       btn_Remove.addActionListener(new ActionListener() {
       	public void actionPerformed(ActionEvent e) {
-      		int index = table.getSelectedRow();
-  		  
-  		  DefaultTableModel tm = (DefaultTableModel)table.getModel();
-  		  if(index>=0 && index<table.getRowCount()) {
-  			  System.out.println("삭제");
-  			  tm.removeRow(index);
-  		  }
+      		int row = table.getSelectedRow();
+  		 
+      		String t = (String) table.getModel().getValueAt(row, 1);
+
+      		
+      		DeleteCheckDialog delchd = new DeleteCheckDialog(t, table, row);
+      		delchd.setVisible(true);
+      		
+      		
       		
       	}
       });
@@ -179,44 +183,23 @@ public class boardtestpageForAdmin extends JFrame {
       ptablepanel.add(btn_Remove);
       
      
-      table.getTableHeader().setReorderingAllowed(false); // 이동 불가
-      table.getTableHeader().setResizingAllowed(false); // 크기 조절 불가
-
-      select();
-      getContentPane().setLayout(null); // 레이아웃 배치관리자 삭제
-    
-      
-      
-      JPanel mainPanel = new JPanel();
-      mainPanel.setBounds(0, 0, 1395, 800);
-      contentPane.add(mainPanel);
 
    }
-
+//테이블에 TB_BOARD 데이터 뿌리기
    private void select() {
       String query = "SELECT L_BOARD_CONTENT,N_BOARD_NO FROM TB_BOARD";    
-      try {
+      try(Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+    	         Statement stat = conn.createStatement();
+    	         ResultSet rs = stat.executeQuery(query);) {
          Class.forName(driver);
-         conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
-         stat = conn.createStatement();
-         rs = stat.executeQuery(query);// 리턴받아와서 데이터를 사용할 객체생성
-
+         
 
          while (rs.next()) { // 각각 값을 가져와서 테이블값들을 추가
             model.addRow(new Object[] { rs.getString("L_BOARD_CONTENT"),rs.getString("N_BOARD_NO")});
-            
-   
          }
       } catch (Exception e) {
          System.out.println(e.getMessage());
-      } finally {
-         try {
-            conn.close();
-            stat.close();
-            rs.close();
-         } catch (Exception e2) {
-         }
-      }
+      } 
    }
    
    
@@ -240,5 +223,42 @@ public class boardtestpageForAdmin extends JFrame {
    }
 }
 
+class DeleteCheckDialog extends JDialog{
+	JLabel pcl = new JLabel("삭제되었습니다.");
+	
+	JButton Okbtn = new JButton("OK");
+	
+	DeleteCheckDialog(String t, JTable table, int row){
+		
+		setLayout(new FlowLayout());
+		add(pcl);
+		add(Okbtn);
+		setSize(200,100);
+		setLocationRelativeTo(null);
+		
+		pcl.setFont(new Font("굴림", Font.PLAIN, 18));
+		
+		//Ok버튼 리스너
+		Okbtn.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				
+				DB db = new DB();
+	      		db.DeleteReview(t, table);
+	      		
+      		DefaultTableModel tm = (DefaultTableModel)table.getModel();
+	  		  if(row>=0 && row<table.getRowCount()) {
+	  			  System.out.println("삭제");
+	  			  tm.removeRow(row);
+	  		  }
+	  		  
+	  		
+				
+				setVisible(false);
 
+			}
+		});
+	}
+	
+
+}
 

@@ -5,6 +5,7 @@ import java.sql.*;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
+import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 
 public class DB {
@@ -51,6 +52,7 @@ public class DB {
 		
 	}
 	
+	
 	//project register 생성자
 	public DB(String ProjectName, String ProjectDescription, String TargetPrice, String filePath) {
 		this.ProjectName = ProjectName;
@@ -68,6 +70,12 @@ public class DB {
 		this.BoardContent = BoardContent;
 	}
 
+	public DB(String t, JTable table) {
+		
+	}
+	
+	
+	
 	
 	//project db에 저장
 	public void inputProjectDB() {
@@ -83,42 +91,7 @@ public class DB {
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 		}
-		
-		//날짜
-//		try(Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
-//			Statement stmt = conn.createStatement();
-//			ResultSet rs = stmt.executeQuery(getDateQuery);)
-//		{	
-//			while(rs.next()) {
-//				date = rs.getString(1);
-//				System.out.println(date);
-//			}
-//		}catch (Exception e) {
-//			e.getMessage();
-//			System.out.println("10");
-//		}
-		
-//		try {
-//
-//			Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
-//
-//			Statement stmt = conn.createStatement();
-//
-//			ResultSet rs = stmt.executeQuery(getProjectImageQuery);
-//	
-//			while(rs.next()) {
-//
-//				String get_project_image = rs.getString(1);
-//				ProjectImage = get_project_image;
-//
-//			}
-//		}catch(Exception e) { 
-//			System.out.println("9");
-//		}
-		
-		
-		
-		
+
 		try(Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
 				Statement stmt = conn.createStatement();
 				ResultSet rs = stmt.executeQuery(getProjectCountQuery);)
@@ -217,8 +190,7 @@ public class DB {
 			System.out.println("load완료");
 			
 		}catch (Exception e) {
-			e.getMessage();
-			System.out.println("1");
+
 		}
 	}
 	
@@ -236,26 +208,28 @@ public class DB {
         //최근 입력된 리뷰내용의 boardno검색
       String CntQuery = "select count(*) from TB_BOARD";
       String boardno = null;
-      try {
+      try(Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+    	         Statement stat = conn.createStatement();
+    	         ResultSet rs = stat.executeQuery(CntQuery);) {
          Class.forName("oracle.jdbc.driver.OracleDriver");
-         Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
-         Statement stat = conn.createStatement();
-         ResultSet rs = stat.executeQuery(CntQuery);
+         
          while(rs.next()) {
         	 boardno = rs.getString(1);
          }
-         try {
-        	 String query = "SELECT L_BOARD_CONTENT FROM TB_BOARD WHERE N_BOARD_NO="+boardno;
+         
+         String query = "SELECT L_BOARD_CONTENT FROM TB_BOARD WHERE N_BOARD_NO="+boardno;
+         try(Connection conn2 = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+    	         Statement stat2 = conn.createStatement();
+    	         ResultSet rs2 = stat.executeQuery(query);) {
+        	 
 	         Class.forName("oracle.jdbc.driver.OracleDriver");
-	         Connection conn2 = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
-	         Statement stat2 = conn.createStatement();
-	         ResultSet rs2 = stat.executeQuery(query);
+	         
 	         
 	         while(rs.next()) {
 	        	 model.addRow(new Object[] { rs.getString("L_BOARD_CONTENT")});
 	         }
          }catch(Exception e) { 
-        	 System.out.println("2");
+        	 
          }
 
          
@@ -264,6 +238,24 @@ public class DB {
          System.out.println("3");
       }
    }
+	
+	
+	public void DeleteReview(String t, JTable table) {
+		String deleteQuery = "DELETE FROM TB_BOARD WHERE N_BOARD_NO="+t;
+
+		try(Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+			Statement stmt = conn.createStatement();) {
+			
+			Class.forName("oracle.jdbc.driver.OracleDriver");
+			
+			stmt.executeUpdate(deleteQuery);
+			conn.commit();
+			
+			
+		} catch (Exception e) { }
+		
+		
+	}
 	
 	
 	
